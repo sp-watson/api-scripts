@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter
 fun main(args: Array<String>) {
     println("Attempting to recall")
 
+    val rootUrl = "[URL here]"
     val movementTimeString = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
     val offenderNo = "[e.g. A1234AA]"
     val token = """
@@ -20,7 +21,7 @@ fun main(args: Array<String>) {
           "youthOffender": false
         }
     """
-    val conn = URL("https://api-dev.prison.service.justice.gov.uk/api/offenders/$offenderNo/recall").openConnection() as HttpURLConnection
+    val conn = URL("$rootUrl/api/offenders/$offenderNo/recall").openConnection() as HttpURLConnection
     conn.requestMethod = "PUT"
     conn.doOutput = true
     conn.setRequestProperty("Content-Type", "application/json")

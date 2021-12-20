@@ -1,46 +1,30 @@
-import java.net.HttpURLConnection
-import java.net.URL
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+import gateways.PrisonApi
+import gateways.RestrictedPatientsApi
+import output.ProgressStream
+import output.ResultStream
+import rpmigration.MigrateOffender
+import rpmigration.MigrationRequestEvent
+import rpmigration.Migrations
+import spreadsheetaccess.SpreadsheetReader
 
 fun main(args: Array<String>) {
-    println("Attempting to recall")
-
-    val rootUrl = "[URL here]"
-    val movementTimeString = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)
-    val offenderNo = "[e.g. A1234AA]"
+    val removingExistingRestrictedPatient = true
+    val prisonApiRootUrl = "[API URL HERE]"
+    val restrictedPatientsApiRootUrl = "[API URL HERE]"
     val token = """
-        [Token here]
+        [TOKEN HERE]
     """.trimIndent()
-    val data = """
-        {
-          "prisonId": "MDI",
-          "movementReasonCode": "24",
-          "recallTime": "$movementTimeString",
-          "imprisonmentStatus": "CUR_ORA",
-          "youthOffender": false
-        }
-    """
-    val conn = URL("$rootUrl/api/offenders/$offenderNo/recall").openConnection() as HttpURLConnection
-    conn.requestMethod = "PUT"
-    conn.doOutput = true
-    conn.setRequestProperty("Content-Type", "application/json")
-    conn.setRequestProperty("Authorization", "Bearer $token")
-    conn.outputStream.write(data.toByteArray(Charsets.UTF_8))
-    try {
-        val lines = conn.inputStream.use {
-            it.bufferedReader().readLines()
-        }
-        lines.forEach{
-            println("Line: $it")
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-        val errorInfo = conn.errorStream.use {
-            it.bufferedReader().readLines()
-        }
-        errorInfo.forEach{
-            println("Error Line: $it")
-        }
-    }
+    val spreadsheetFileName = "[SPREADSHEET FILENAME HERE]"
+    val resultsBaseDirectory = "[DIRECTORY HERE]"
+
+    val archiveSubDirectory = "archive"
+    val progressStream = ProgressStream(resultsBaseDirectory, archiveSubDirectory)
+    val migrationCommand = Migrations(
+        SpreadsheetReader(spreadsheetFileName),
+        ResultStream(resultsBaseDirectory),
+        ProgressStream(resultsBaseDirectory, archiveSubDirectory),
+        MigrateOffender(progressStream, PrisonApi(prisonApiRootUrl, token), RestrictedPatientsApi(restrictedPatientsApiRootUrl, token), removingExistingRestrictedPatient)
+    )
+
+    migrationCommand.handle(MigrationRequestEvent(1, 1))
 }

@@ -1,7 +1,7 @@
 import gateways.PrisonApi
 import gateways.RestrictedPatientsApi
-import output.ProgressStream
-import output.ResultStream
+import output.PerOffenderFileOutput
+import output.SynchronisedSummaryFileOutput
 import rpmigration.MigrateOffender
 import rpmigration.MigrationRequestEvent
 import rpmigration.Migrations
@@ -18,11 +18,11 @@ fun main(args: Array<String>) {
     val resultsBaseDirectory = "[DIRECTORY HERE]"
 
     val archiveSubDirectory = "archive"
-    val progressStream = ProgressStream(resultsBaseDirectory, archiveSubDirectory)
+    val progressStream = PerOffenderFileOutput(resultsBaseDirectory, archiveSubDirectory)
     val migrationCommand = Migrations(
         SpreadsheetReader(spreadsheetFileName),
-        ResultStream(resultsBaseDirectory),
-        ProgressStream(resultsBaseDirectory, archiveSubDirectory),
+        SynchronisedSummaryFileOutput(resultsBaseDirectory),
+        PerOffenderFileOutput(resultsBaseDirectory, archiveSubDirectory),
         MigrateOffender(progressStream, PrisonApi(prisonApiRootUrl, token), RestrictedPatientsApi(restrictedPatientsApiRootUrl, token), removingExistingRestrictedPatient)
     )
 

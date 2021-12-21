@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter
 
 typealias StreamReference = FileWriter
 
-class ProgressStream(val baseDirectory: String, val archiveSubDirectory: String) {
+class PerOffenderFileOutput(val baseDirectory: String, val archiveSubDirectory: String) {
     fun migrationStarted(offenderNo: String): StreamReference {
         val fileToWriteTo = getFile(offenderNo)
         if (fileToWriteTo.exists()) {

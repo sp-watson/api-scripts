@@ -1,7 +1,7 @@
 package rpmigration
 
-import output.ProgressStream
-import output.ResultStream
+import output.PerOffenderFileOutput
+import output.SynchronisedSummaryFileOutput
 import spreadsheetaccess.RowInformation
 import spreadsheetaccess.SpreadsheetReader
 
@@ -12,8 +12,8 @@ data class MigrationRequestEvent (
 
 class Migrations (
     private val spreadsheetReader: SpreadsheetReader,
-    private val resultStream: ResultStream,
-    private val progressStream: ProgressStream,
+    private val resultStream: SynchronisedSummaryFileOutput,
+    private val progressStream: PerOffenderFileOutput,
     private val migrateOffenderCommand: MigrateOffender,
 ) {
     fun handle(command: MigrationRequestEvent) {
@@ -31,10 +31,11 @@ class Migrations (
         try {
             migrateOffenderCommand.handle(migrationData)
         } catch (th: Throwable) {
-            resultStream.logFailedMigration(migrationInfo.offenderNo)
+            resultStream.logMigrationResult(migrationInfo.offenderNo, false)
             progressStream.migrationFailed(progressStreamRef, th)
             return false
         }
+        resultStream.logMigrationResult(migrationInfo.offenderNo, true)
         progressStream.migrationSucceeded(progressStreamRef)
         return true
     }

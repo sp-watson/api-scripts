@@ -6,7 +6,7 @@ import gateways.PrisonerNotRemovedFromRpDbException
 import gateways.RestrictedPatientsApi
 import gateways.ServerException
 import gateways.WebClientException
-import output.ProgressStream
+import output.PerOffenderFileOutput
 import output.StreamReference
 import utils.Loops
 import java.time.LocalDateTime
@@ -20,7 +20,7 @@ data class MigrateOffenderRequestEvent(
 )
 
 class MigrateOffender (
-    private val progressStream: ProgressStream,
+    private val progressStream: PerOffenderFileOutput,
     private val prisonApi: PrisonApi,
     private val restrictedPatientApi: RestrictedPatientsApi,
     private val removingExistingRestrictedPatient: Boolean

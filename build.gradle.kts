@@ -16,6 +16,7 @@ dependencies {
     implementation("org.junit.jupiter:junit-jupiter:5.4.2")
     implementation("org.apache.poi:poi:5.1.0")
     implementation("org.apache.poi:poi-ooxml:5.1.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
     testImplementation(kotlin("test"))
     testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.28.0")
 }

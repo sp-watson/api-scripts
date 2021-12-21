@@ -15,6 +15,6 @@ class SynchronisedSummaryFileOutput(baseDirectory: String) {
 
     @Synchronized fun logMigrationResult(offenderNo: String, successful: Boolean) {
         val summaryString = if (successful) "SUCCEEDED" else "FAILED"
-        path.toFile().appendText("$offenderNo - $summaryString" )
+        path.toFile().appendText("$offenderNo - $summaryString\n" )
     }
 }

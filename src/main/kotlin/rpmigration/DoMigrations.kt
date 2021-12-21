@@ -4,6 +4,7 @@ import output.PerOffenderFileOutput
 import output.SynchronisedSummaryFileOutput
 import spreadsheetaccess.RowInformation
 import spreadsheetaccess.SpreadsheetReader
+import utils.ParallelProcessing
 
 data class MigrationRequestEvent (
     val startRow: Int,
@@ -20,9 +21,10 @@ class Migrations (
         println("Reading from row ${command.startRow} - ${command.numberOfRows} rows")
 
         val offenderInformation = spreadsheetReader.readRows(command.startRow, command.numberOfRows)
-        val failedItems = offenderInformation.map { migrateOffender(it) }.filter { !it }.count()
+        val failedItems = ParallelProcessing().runAllInBatchesOf3(offenderInformation, this::migrateOffender)
 
-        println("Read ${offenderInformation.size} items - $failedItems failed")
+        val failedItemList = failedItems.filter { !it }
+        println("Read ${offenderInformation.size} items - ${failedItemList.size} failed")
     }
 
     private fun migrateOffender(migrationInfo: RowInformation): Boolean {

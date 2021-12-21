@@ -21,7 +21,7 @@ class SpreadsheetReader(
             if (!cell.contents.isBlank() && isWantedCell(cell.rowNumber, startRow, numberOfRows)) {
                 if (cell.columnName == OFFENDER_NO_ROW) {
                     println("\nFound cell at ${cell.columnName} ${cell.rowNumber}:  ${cell.contents}")
-                    foundRows.add(RowInformation("MDI", cell.contents, "ALPHOS"))
+                    foundRows.add(RowInformation("MDI", cell.contents, "ALPHA"))
                 }
             }
         }

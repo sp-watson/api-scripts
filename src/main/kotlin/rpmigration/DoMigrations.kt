@@ -21,7 +21,7 @@ class Migrations (
         println("Reading from row ${command.startRow} - ${command.numberOfRows} rows")
 
         val offenderInformation = spreadsheetReader.readRows(command.startRow, command.numberOfRows)
-        val failedItems = ParallelProcessing().runAllInBatchesOf3(offenderInformation, this::migrateOffender)
+        val failedItems = ParallelProcessing().runAllInBatches(3, offenderInformation, this::migrateOffender)
 
         val failedItemList = failedItems.filter { !it }
         println("Read ${offenderInformation.size} items - ${failedItemList.size} failed")

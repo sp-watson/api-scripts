@@ -12,6 +12,7 @@ class ParallelProcessingTest {
         Assertions.assertThat(outputs).contains(
             "NOT a", "NOT b", "NOT c", "NOT d"
         )
+        // Ensure the first 3 get processed together, so the 4th will be the last
         Assertions.assertThat(outputs.get(3)).isEqualTo("NOT d")
     }
 

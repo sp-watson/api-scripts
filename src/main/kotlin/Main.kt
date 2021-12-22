@@ -7,24 +7,26 @@ import rpmigration.MigrationRequestEvent
 import rpmigration.Migrations
 import spreadsheetaccess.SpreadsheetReader
 
-fun main(args: Array<String>) {
-    val removingExistingRestrictedPatient = true
-    val prisonApiRootUrl = "[API URL HERE]"
-    val restrictedPatientsApiRootUrl = "[API URL HERE]"
-    val token = """
-        [TOKEN HERE]
-    """.trimIndent()
-    val spreadsheetFileName = "[SPREADSHEET FILENAME HERE]"
-    val resultsBaseDirectory = "[DIRECTORY HERE]"
+fun main() {
+    val config: Config = Dev()
 
     val archiveSubDirectory = "archive"
-    val progressStream = PerOffenderFileOutput(resultsBaseDirectory, archiveSubDirectory)
+    val recallMovementReasonCode = "Z"
+    val recallImprisonmentStatus = "RECEP_HOS"
+    val recallIsYouthOffender = false
+    val dischargeToHospitalCommentText = "Released to hospital (Restricted Patients migration)"
+
+    val progressStream = PerOffenderFileOutput(config.resultsBaseDirectory, archiveSubDirectory)
+    val prisonApi = PrisonApi(config.prisonApiRootUrl, config.token)
+    val rpApi = RestrictedPatientsApi(config.restrictedPatientsApiRootUrl, config.token)
+
     val migrationCommand = Migrations(
-        SpreadsheetReader(spreadsheetFileName),
-        SynchronisedSummaryFileOutput(resultsBaseDirectory),
-        PerOffenderFileOutput(resultsBaseDirectory, archiveSubDirectory),
-        MigrateOffender(progressStream, PrisonApi(prisonApiRootUrl, token), RestrictedPatientsApi(restrictedPatientsApiRootUrl, token), removingExistingRestrictedPatient)
+        SpreadsheetReader(config.spreadsheetFileName),
+        SynchronisedSummaryFileOutput(config.resultsBaseDirectory),
+        PerOffenderFileOutput(config.resultsBaseDirectory, archiveSubDirectory),
+        MigrateOffender(progressStream, prisonApi, rpApi, config.removingExistingRestrictedPatient,
+            recallMovementReasonCode, recallImprisonmentStatus, recallIsYouthOffender, dischargeToHospitalCommentText)
     )
 
-    migrationCommand.handle(MigrationRequestEvent(1, 1))
+    migrationCommand.handle(MigrationRequestEvent(11, 4))
 }

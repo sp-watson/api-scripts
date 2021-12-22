@@ -13,7 +13,8 @@ class RestrictedPatientsApi (
     fun moveToHospital(fromPrisonId: String,
                        offenderNo: String,
                        hospitalCode: String,
-                       dischargeTime: LocalDateTime) {
+                       dischargeTime: LocalDateTime,
+                       commentText: String) {
         println("Attempting to move $offenderNo to hospital")
 
         val dischargeTimeString = dischargeTime.format(DateTimeFormatter.ISO_DATE_TIME)
@@ -22,7 +23,7 @@ class RestrictedPatientsApi (
             "offenderNo": "$offenderNo",
             "hospitalLocationCode": "$hospitalCode",
             "dischargeTime": "$dischargeTimeString",
-            "commentText": "Released to hospital (migration)",
+            "commentText": "$commentText",
             "supportingPrisonId": "$fromPrisonId",
             "fromLocationId": "$fromPrisonId"
         }

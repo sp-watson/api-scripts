@@ -8,19 +8,24 @@ class PrisonApi (
     val prisonApiUrl: String,
     val token: String,
 ) {
+    // Synchronized to avoid "Error: This resource is currently locked by another user." errors
     @Throws(exceptionClasses = [WebClientException::class, ServerException::class])
-    fun recall(toPrisonId: String,
-               offenderNo: String,
-               movementTimeString: LocalDateTime) {
+    @Synchronized fun recall(toPrisonId: String,
+                                            offenderNo: String,
+                                            movementTimeString: LocalDateTime,
+                                            movementReasonCode: String,
+                                            imprisonmentStatus: String,
+                                            isYouthOffender: Boolean) {
         println("Attempting to recall $offenderNo ")
 
+        val youthOffenderString = if (isYouthOffender) "true" else "false"
         val data = """
         {
           "prisonId": "$toPrisonId",
-          "movementReasonCode": "24",
+          "movementReasonCode": "$movementReasonCode",
           "recallTime": "$movementTimeString",
-          "imprisonmentStatus": "CUR_ORA",
-          "youthOffender": false
+          "imprisonmentStatus": "$imprisonmentStatus",
+          "youthOffender": $youthOffenderString
         }
     """
         val conn = URL("$prisonApiUrl/api/offenders/$offenderNo/recall").openConnection() as HttpURLConnection

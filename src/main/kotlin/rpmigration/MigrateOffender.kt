@@ -23,14 +23,19 @@ class MigrateOffender (
     private val progressStream: PerOffenderFileOutput,
     private val prisonApi: PrisonApi,
     private val restrictedPatientApi: RestrictedPatientsApi,
-    private val removingExistingRestrictedPatient: Boolean
+    private val removingExistingRestrictedPatient: Boolean,
+    private val recallMovementReasonCode: String,
+    private val recallImprisonmentStatus: String,
+    private val recallIsYouthOffender: Boolean,
+    private val dischargeToHospitalCommentText: String
 ) {
     @Throws(exceptionClasses = [WebClientException::class, ServerException::class, PrisonerNotRemovedFromRpDbException::class])
     fun handle(command: MigrateOffenderRequestEvent) {
         println("Attempting to migrate ${command.offenderNo} ")
 
         val recallTime = LocalDateTime.now()
-        prisonApi.recall(command.responsiblePrisonId, command.offenderNo, recallTime)
+        prisonApi.recall(command.responsiblePrisonId, command.offenderNo, recallTime,
+            recallMovementReasonCode, recallImprisonmentStatus, recallIsYouthOffender)
         progressStream.recallSuccessful(command.progressStreamRef)
 
         if (removingExistingRestrictedPatient) {
@@ -41,7 +46,7 @@ class MigrateOffender (
         }
 
         val movementTime = LocalDateTime.now()
-        restrictedPatientApi.moveToHospital(command.responsiblePrisonId, command.offenderNo, command.targetHospitalCode, movementTime)
+        restrictedPatientApi.moveToHospital(command.responsiblePrisonId, command.offenderNo, command.targetHospitalCode, movementTime, dischargeToHospitalCommentText)
 
         val offenderAdded = checkPrisonerAdded(command.offenderNo)
         if (!offenderAdded) {

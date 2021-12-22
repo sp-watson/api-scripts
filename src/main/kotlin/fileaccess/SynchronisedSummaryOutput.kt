@@ -1,10 +1,10 @@
-package output
+package fileaccess
 
 import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class SynchronisedSummaryFileOutput(baseDirectory: String) {
+class SynchronisedSummaryOutput(baseDirectory: String) {
     // Might be more reliable to store the File object here
     private val path: Path
 

@@ -1,9 +1,11 @@
 package rpmigration
 
-import output.PerOffenderFileOutput
-import output.SynchronisedSummaryFileOutput
+import fileaccess.PerOffenderFileOutput
+import fileaccess.SuccessfulOffenderMigrations
+import fileaccess.SynchronisedSummaryOutput
 import spreadsheetaccess.RowInformation
 import spreadsheetaccess.SpreadsheetReader
+import utils.OffenderProcessing
 import utils.ParallelProcessing
 
 data class MigrationRequestEvent (
@@ -13,7 +15,8 @@ data class MigrationRequestEvent (
 
 class Migrations (
     private val spreadsheetReader: SpreadsheetReader,
-    private val resultStream: SynchronisedSummaryFileOutput,
+    private val successfulMigrations: SuccessfulOffenderMigrations,
+    private val resultStream: SynchronisedSummaryOutput,
     private val progressStream: PerOffenderFileOutput,
     private val migrateOffenderCommand: MigrateOffender,
 ) {
@@ -21,10 +24,12 @@ class Migrations (
         println("Reading from row ${command.startRow} - ${command.numberOfRows} rows")
 
         val offenderInformation = spreadsheetReader.readRows(command.startRow, command.numberOfRows)
-        val failedItems = ParallelProcessing().runAllInBatches(3, offenderInformation, this::migrateOffender)
+        val successfullyMigratedOffenders = successfulMigrations.getMigratedOffenders()
+        val unmigratedOffenderInformation = OffenderProcessing().filterMigratedOffenders(offenderInformation, successfullyMigratedOffenders)
+        val failedItems = ParallelProcessing().runAllInBatches(3, unmigratedOffenderInformation, this::migrateOffender)
 
         val failedItemList = failedItems.filter { !it }
-        println("Read ${offenderInformation.size} items - ${failedItemList.size} failed")
+        println("Read ${offenderInformation.size} items - ${unmigratedOffenderInformation.size} processed, ${failedItemList.size} failed")
     }
 
     private fun migrateOffender(migrationInfo: RowInformation): Boolean {

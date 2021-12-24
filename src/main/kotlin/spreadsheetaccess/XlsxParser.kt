@@ -54,7 +54,7 @@ class XlsxParser(
 data class CellContents (
     val columnName: String,
     val rowNumber: Int,
-    val contents: String,
+    val contents: String?,
 )
 
 /**
@@ -108,7 +108,8 @@ private class EntryHandler(
         // v => contents of a cell
         // Output after we've seen the string contents
         if (name == "v") {
-            cellContentsProcessor(CellContents(lastCol, lastRow, lastContents))
+            val cleansedContents = if ("#N/A".equals(lastContents)) null else lastContents
+            cellContentsProcessor(CellContents(lastCol, lastRow, cleansedContents))
         }
     }
 

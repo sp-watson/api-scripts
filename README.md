@@ -8,7 +8,7 @@ As such, it is very useful for one-off tasks like migrations.
 # Features
 There is currently only 1 function, invoked from the Main class.
 
-It reads offender details form a spreadsheet (the format of which has been determined by another team).
+It reads offender details from an XLSX spreadsheet (the format of which has been determined by another team).
 These offender details are then used to recall then register them as a restricted patient.
 
 The Main class defines all the configuration and wires up the dependencies.
@@ -19,3 +19,14 @@ There are 3 outputs and 1 input/fileaccess file:
 * An fileaccess file for each offender. This gives information about how far the migration got and any error messages.
   If a file already exists for a givne offender, then that is moved to the archive sub-directory.
 * A file that contains a list of offenders that have been successfully migrated. This must exist, so before the first run must be created and be empty.
+
+## Instructions
+In order to run the feature you will need to:
+* Create a class that implements the Config class
+* As part of that class, add a name of a base directory `resultsBaseDirectory`
+* In that base directory:
+  - Make a blank sub-directory called "archive"
+  - Make a blank file called SUCCESSFUL_MIGRATIONS.txt
+* Add config `spreadsheetFileName` that indicates where the xlsx file is
+* In the Main class, set the first offender number (e.g. 1 - start of the file) and the number of offenders
+* Run it using the Main class as the entry point

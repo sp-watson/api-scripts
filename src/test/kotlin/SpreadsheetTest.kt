@@ -10,16 +10,17 @@ class SpreadsheetTest {
 
     @BeforeEach
     fun setup() {
-        underTest = SpreadsheetReader(getAbsoluteFileName("Example_data.xlsx"))
+        underTest = SpreadsheetReader(getAbsoluteFileName("Example_data_v2.xlsx"))
     }
 
     @Test
     fun `should read spreadsheet`() {
-        val foundData = underTest.readRows(1, 2)
+        val foundData = underTest.readRows(4, 3)
 
         Assertions.assertThat(foundData).contains(
-            RowInformation("MDI", "A0007CL", "ALPHA"),
-            RowInformation("MDI", "A0013EJ", "ALPHA")
+            RowInformation( "A8344DX", "Cygnet Hospital Woking"),
+            RowInformation( "A2388EK", "John Howard Centre"),
+            RowInformation( null, "Wellesley Hospital"),
         )
     }
 

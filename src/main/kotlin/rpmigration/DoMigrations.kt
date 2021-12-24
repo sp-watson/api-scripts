@@ -3,7 +3,6 @@ package rpmigration
 import fileaccess.PerOffenderFileOutput
 import fileaccess.SuccessfulOffenderMigrations
 import fileaccess.SynchronisedSummaryOutput
-import spreadsheetaccess.RowInformation
 import spreadsheetaccess.SpreadsheetReader
 import utils.OffenderProcessing
 import utils.ParallelProcessing
@@ -11,6 +10,12 @@ import utils.ParallelProcessing
 data class MigrationRequestEvent (
     val startRow: Int,
     val numberOfRows: Int,
+)
+
+data class OffenderInformation(
+    val offenderNo: String,
+    val prisonId: String,
+    val hospitalName: String,
 )
 
 class Migrations (
@@ -26,15 +31,17 @@ class Migrations (
         val offenderInformation = spreadsheetReader.readRows(command.startRow, command.numberOfRows)
         val successfullyMigratedOffenders = successfulMigrations.getMigratedOffenders()
         val unmigratedOffenderInformation = OffenderProcessing().filterMigratedOffenders(offenderInformation, successfullyMigratedOffenders)
-        val failedItems = ParallelProcessing().runAllInBatches(3, unmigratedOffenderInformation, this::migrateOffender)
+        val actualOffenderInformation = OffenderProcessing().cleanseOffenderInformation(unmigratedOffenderInformation)
+
+        val failedItems = ParallelProcessing().runAllInBatches(3, actualOffenderInformation, this::migrateOffender)
 
         val failedItemList = failedItems.filter { !it }
         println("Read ${offenderInformation.size} items - ${unmigratedOffenderInformation.size} processed, ${failedItemList.size} failed")
     }
 
-    private fun migrateOffender(migrationInfo: RowInformation): Boolean {
+    private fun migrateOffender(migrationInfo: OffenderInformation): Boolean {
         val progressStreamRef = progressStream.migrationStarted(migrationInfo.offenderNo)
-        val migrationData = MigrateOffenderRequestEvent(migrationInfo.prisonId, migrationInfo.offenderNo, migrationInfo.targetHospitalCode, progressStreamRef)
+        val migrationData = MigrateOffenderRequestEvent(migrationInfo.prisonId, migrationInfo.offenderNo, migrationInfo.hospitalName, progressStreamRef)
         try {
             migrateOffenderCommand.handle(migrationData)
         } catch (th: Throwable) {

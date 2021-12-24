@@ -9,7 +9,10 @@ import rpmigration.Migrations
 import spreadsheetaccess.SpreadsheetReader
 
 fun main() {
-    val config: Config = Dev()
+    val config: Config = PreProd()
+
+    val firstOffenderNumber = 1
+    val numberOfOffenders = 3
 
     val archiveSubDirectory = "archive"
     val existingSuccessfulMigrationFileName = "SUCCESSFUL_MIGRATIONS.txt"
@@ -32,5 +35,5 @@ fun main() {
             recallMovementReasonCode, recallImprisonmentStatus, recallIsYouthOffender, dischargeToHospitalCommentText)
     )
 
-    migrationCommand.handle(MigrationRequestEvent(11, 4))
+    migrationCommand.handle(MigrationRequestEvent(firstOffenderNumber, numberOfOffenders))
 }

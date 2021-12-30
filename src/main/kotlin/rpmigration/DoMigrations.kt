@@ -33,7 +33,7 @@ class Migrations (
         val unmigratedOffenderInformation = OffenderProcessing().filterMigratedOffenders(offenderInformation, successfullyMigratedOffenders)
         val actualOffenderInformation = OffenderProcessing().cleanseOffenderInformation(unmigratedOffenderInformation)
 
-        val failedItems = ParallelProcessing().runAllInBatches(3, actualOffenderInformation, this::migrateOffender)
+        val failedItems = ParallelProcessing().runAllInParallelBatches(3, actualOffenderInformation, this::migrateOffender)
 
         val failedItemList = failedItems.filter { !it }
         println("Read ${offenderInformation.size} items - ${unmigratedOffenderInformation.size} processed, ${failedItemList.size} failed")

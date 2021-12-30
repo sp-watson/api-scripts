@@ -7,7 +7,7 @@ class ParallelProcessingTest {
     @Test
     fun `should execute functions simultaneously`() {
         val inputs = listOf("a", "b", "c", "d")
-        val outputs = ParallelProcessing().runAllInBatches(3, inputs, this::doSomething)
+        val outputs = ParallelProcessing().runAllInParallelBatches(3, inputs, this::doSomething)
 
         Assertions.assertThat(outputs).contains(
             "NOT a", "NOT b", "NOT c", "NOT d"

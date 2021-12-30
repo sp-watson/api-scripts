@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.5.10"
+    kotlin("plugin.serialization") version "1.5.10"
     application
 }
 
@@ -17,6 +18,7 @@ dependencies {
     implementation("org.apache.poi:poi:5.1.0")
     implementation("org.apache.poi:poi-ooxml:5.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
     testImplementation(kotlin("test"))
     testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.28.0")
 }

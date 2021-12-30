@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import spreadsheetaccess.RowInformation
 import spreadsheetaccess.SpreadsheetReader
+import java.time.LocalDate
 
 class SpreadsheetTest {
     private lateinit var underTest: SpreadsheetReader
@@ -18,9 +19,9 @@ class SpreadsheetTest {
         val foundData = underTest.readRows(4, 3)
 
         Assertions.assertThat(foundData).contains(
-            RowInformation( "A8344DX", "Cygnet Hospital Woking"),
-            RowInformation( "A2388EK", "John Howard Centre"),
-            RowInformation( null, "Wellesley Hospital"),
+            RowInformation( "A8344DX", "Cygnet Hospital Woking", LocalDate.of(1968, 1, 19), "Simon", "Kirk"),
+            RowInformation( "A2388EK", "John Howard Centre", LocalDate.of(1991, 10, 15), "Sahme", "Mohamed"),
+            RowInformation( null, "Wellesley Hospital", LocalDate.of(1990, 10, 3), "Jamie David", "Groves"),
         )
     }
 

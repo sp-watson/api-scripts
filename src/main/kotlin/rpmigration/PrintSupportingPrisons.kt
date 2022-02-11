@@ -33,16 +33,16 @@ class PrintSupportingPrisons (
         try {
             val movementDetails = prisonApi.getLatestMovement(offenderNos)
             val lastReleasePrisonByOffender: List<OffenderSupportingPrisonDetails> = ListProcessing().getLastReleaseByOffender(offenderNos, movementDetails)
-            return ParallelProcessing().runAllInParallelBatches(3, lastReleasePrisonByOffender, this::printSupportingPrison)
+            return ParallelProcessing().runAllInParallelBatches(3, lastReleasePrisonByOffender, null, this::printSupportingPrison)
         } catch (th: Throwable) {
             // Consider giving better message
             val errorInformation = th.message ?: "No message"
             val offenderReleaseInformationWithError: List<OffenderSupportingPrisonDetails> = ListProcessing().makeOffenderReleaseInformationWithError(offenderNos, errorInformation)
-            return ParallelProcessing().runAllInParallelBatches(3, offenderReleaseInformationWithError, this::printSupportingPrison)
+            return ParallelProcessing().runAllInParallelBatches(3, offenderReleaseInformationWithError, null, this::printSupportingPrison)
         }
     }
 
-    private fun printSupportingPrison(supportingPrisonDetails: OffenderSupportingPrisonDetails): Boolean {
+    private fun printSupportingPrison(supportingPrisonDetails: OffenderSupportingPrisonDetails, context: Nothing?): Boolean {
         println("${supportingPrisonDetails.offenderNo} - ${supportingPrisonDetails.supportingPrison}")
         return supportingPrisonDetails.foundSupportingPrison
     }

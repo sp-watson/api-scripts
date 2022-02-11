@@ -12,7 +12,7 @@ class RestrictedPatientsApi (
     @Throws(exceptionClasses = [WebClientException::class, ServerException::class])
     fun moveToHospital(fromPrisonId: String,
                        offenderNo: String,
-                       hospitalCode: String,
+                       hospitalNomsId: String,
                        dischargeTime: LocalDateTime,
                        commentText: String) {
         println("Attempting to move $offenderNo to hospital")
@@ -21,7 +21,7 @@ class RestrictedPatientsApi (
         val data = """
         {
             "offenderNo": "$offenderNo",
-            "hospitalLocationCode": "$hospitalCode",
+            "hospitalLocationCode": "$hospitalNomsId",
             "dischargeTime": "$dischargeTimeString",
             "commentText": "$commentText",
             "supportingPrisonId": "$fromPrisonId",

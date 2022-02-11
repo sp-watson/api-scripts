@@ -13,12 +13,13 @@ These offender details are then used to recall then register them as a restricte
 
 The Main class defines all the configuration and wires up the dependencies.
 
-There are 3 outputs and 1 input/fileaccess file:
+There are 3 outputs and 1 input file:
 * The console, which gives messages indicating what is happening
 * A summary file called "SUMMARY-[date and time].txt". This provides a list of the outcomes of the migration for each offender.
-* An fileaccess file for each offender. This gives information about how far the migration got and any error messages.
+* A file for each offender. This gives information about how far the migration got and any error messages.
   If a file already exists for a givne offender, then that is moved to the archive sub-directory.
 * A file that contains a list of offenders that have been successfully migrated. This must exist, so before the first run must be created and be empty.
+  This file should never be deleted, as it is the only way the system knows whether to try to migrate an offender.
 
 ## Instructions
 In order to run the feature you will need to:

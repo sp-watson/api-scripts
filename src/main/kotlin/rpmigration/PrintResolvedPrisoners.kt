@@ -36,14 +36,14 @@ class PrintResolvedPrisoners (
         val offenderInformation = spreadsheetReader.readAllRows()
         val validOffenderNos = ListProcessing().getValidOffenderDetails(offenderInformation)
 
-        val processedRows = ParallelProcessing().runAllInParallelBatches(3, validOffenderNos, this::processOffendersBatch)
+        val processedRows = ParallelProcessing().runAllInParallelBatches(3, validOffenderNos, null, this::processOffendersBatch)
 
         val nullOffenderSize = offenderInformation.size - validOffenderNos.size
         val errorCounts = ListProcessing().countFailedTypes(processedRows)
         println("Finished printing. Total processed: ${validOffenderNos.size}. Missing offenderNos: $nullOffenderSize, Not matched: ${errorCounts.noneMatched}, Multiple matches: ${errorCounts.multipleMatches}, Not matching provided: ${errorCounts.notMatchedProvided}, API error: ${errorCounts.errored}")
     }
 
-    private fun processOffendersBatch(offenderDetails: OffenderDetails): ResolutionResult {
+    private fun processOffendersBatch(offenderDetails: OffenderDetails, context: Nothing?): ResolutionResult {
         try {
             val foundOffenderDetails = prisonApi.globalSearch(offenderDetails.familyName, offenderDetails.dob)
             val resolutionResult = OffenderProcessing().generateResolutionResult(offenderDetails, foundOffenderDetails)

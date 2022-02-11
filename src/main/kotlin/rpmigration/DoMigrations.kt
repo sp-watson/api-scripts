@@ -1,6 +1,7 @@
 package rpmigration
 
 import fileaccess.PerOffenderFileOutput
+import fileaccess.PrisonLookup
 import fileaccess.SuccessfulOffenderMigrations
 import fileaccess.SynchronisedSummaryOutput
 import spreadsheetaccess.SpreadsheetReader
@@ -14,12 +15,13 @@ data class MigrationRequestEvent (
 
 data class OffenderInformation(
     val offenderNo: String,
-    val prisonId: String,
-    val hospitalName: String,
+    val prisonName: String,
+    val hospitalNomsId: String,
 )
 
 class Migrations (
     private val spreadsheetReader: SpreadsheetReader,
+    private val prisonLookup: PrisonLookup,
     private val successfulMigrations: SuccessfulOffenderMigrations,
     private val resultStream: SynchronisedSummaryOutput,
     private val progressStream: PerOffenderFileOutput,
@@ -33,16 +35,19 @@ class Migrations (
         val unmigratedOffenderInformation = OffenderProcessing().filterMigratedOffenders(offenderInformation, successfullyMigratedOffenders)
         val actualOffenderInformation = OffenderProcessing().cleanseOffenderInformation(unmigratedOffenderInformation)
 
-        val failedItems = ParallelProcessing().runAllInParallelBatches(3, actualOffenderInformation, this::migrateOffender)
+        val prisonIdsByName = prisonLookup.getResolvedPrisons()
+
+        val failedItems = ParallelProcessing().runAllInParallelBatches(3, actualOffenderInformation, prisonIdsByName, this::migrateOffender)
 
         val failedItemList = failedItems.filter { !it }
         println("Read ${offenderInformation.size} items - ${unmigratedOffenderInformation.size} processed, ${failedItemList.size} failed")
     }
 
-    private fun migrateOffender(migrationInfo: OffenderInformation): Boolean {
+    private fun migrateOffender(migrationInfo: OffenderInformation, prisonIdsByName: Map<String, String>): Boolean {
         val progressStreamRef = progressStream.migrationStarted(migrationInfo.offenderNo)
-        val migrationData = MigrateOffenderRequestEvent(migrationInfo.prisonId, migrationInfo.offenderNo, migrationInfo.hospitalName, progressStreamRef)
         try {
+            val prisonId = OffenderProcessing().resolvePrisonName(prisonIdsByName, migrationInfo.prisonName)
+            val migrationData = MigrateOffenderRequestEvent(prisonId, migrationInfo.offenderNo, migrationInfo.hospitalNomsId, progressStreamRef)
             migrateOffenderCommand.handle(migrationData)
         } catch (th: Throwable) {
             resultStream.logMigrationResult(migrationInfo.offenderNo, false)

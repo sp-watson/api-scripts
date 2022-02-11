@@ -19,6 +19,14 @@ data class MovementInformation (
 )
 
 @Serializable
+data class AgencyDetails (
+    val agencyId: String,
+    val description: String,
+    val longDescription: String,
+    val active: Boolean,
+)
+
+@Serializable
 data class OffenderSearchResult (
     val offenderNo: String,
     val firstName: String,
@@ -90,6 +98,34 @@ class PrisonApi (
         conn.setRequestProperty("Content-Type", "application/json")
         conn.setRequestProperty("Authorization", "Bearer $token")
         conn.outputStream.write(data.toByteArray(Charsets.UTF_8))
+        try {
+            val lines = conn.inputStream.use {
+                it.bufferedReader().readLines()
+            }
+            lines.forEach{
+                println("Line: $it")
+            }
+            val combinedResult = lines.joinToString (" ")
+            return Json {ignoreUnknownKeys = true} .decodeFromString(combinedResult)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            val errorString = getError(conn)
+            println("Error response: ${conn.responseCode}: ${conn.responseMessage}")
+            if (conn.responseCode >= 500) {
+                throw ServerException()
+            }
+            throw WebClientException(conn.responseCode, errorString)
+        } finally {
+            conn.disconnect()
+        }
+    }
+
+    @Throws(exceptionClasses = [WebClientException::class, ServerException::class])
+    fun getAllInstitutions(): List<AgencyDetails> {
+        val conn = URL("$prisonApiUrl/api/agencies/type/INST").openConnection() as HttpURLConnection
+        conn.requestMethod = "GET"
+        conn.doOutput = true
+        conn.setRequestProperty("Authorization", "Bearer $token")
         try {
             val lines = conn.inputStream.use {
                 it.bufferedReader().readLines()

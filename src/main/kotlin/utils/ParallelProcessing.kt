@@ -16,23 +16,23 @@ class ParallelProcessing {
         return outputs
     }
 
-    fun <T, V> runAllInParallelBatches(batchSize: Int, inputs: Collection<T>, block: (T) -> V): List<V> {
+    fun <T, C, V> runAllInParallelBatches(batchSize: Int, inputs: Collection<T>, context: C, block: (T, C) -> V): List<V> {
         val batchInputs = inputs.chunked(batchSize)
         val outputs = mutableListOf<V>()
         batchInputs.forEach { batch ->
             val inputOutputMapEntries = BatchMapEntries<T, V>(batch)
-            runAllInParallel(inputOutputMapEntries, block)
+            runAllInParallel(inputOutputMapEntries, context, block)
             outputs.addAll(inputOutputMapEntries.outputs)
         }
         return outputs
     }
 
-    private fun <T, V> runAllInParallel(inputOutputMapEntries: BatchMapEntries<T, V>, block: (T) -> V) {
+    private fun <T, C, V> runAllInParallel(inputOutputMapEntries: BatchMapEntries<T, V>, context: C, block: (T, C) -> V) {
         // Rudimentary batch
         runBlocking {
             inputOutputMapEntries.getInputs().forEach {
                 launch(Dispatchers.Default) {
-                    val output = block(it)
+                    val output = block(it, context)
                     inputOutputMapEntries.addOutput(output)
                 }
             }

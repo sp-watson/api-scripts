@@ -1,5 +1,6 @@
 package utils
 
+import gateways.AgencyDetails
 import gateways.MovementInformation
 import rpmigration.OffenderDetails
 import rpmigration.OffenderSupportingPrisonDetails
@@ -13,9 +14,15 @@ data class FailureTypeCounts (
     val errored: Int,
 )
 
+data class ResolutionResult (
+    val initialName: String,
+    val resolvedNomisCode: String?,
+    val resolutionNotes: String?,
+)
+
 class ListProcessing {
-    fun findUniqueHospitals(rows: List<RowInformation>): Set<String> {
-        return rows.filter { it.hospitalName != null }.map { it.hospitalName!! }.toSet()
+    fun findUniquePrisonNames(rows: List<RowInformation>): Set<String> {
+        return rows.filter { it.prisonName != null }.map { it.prisonName!! }.toSet()
     }
 
     fun findValidOffenderNos(rows: List<RowInformation>): List<String> {
@@ -65,5 +72,73 @@ class ListProcessing {
             return OffenderSupportingPrisonDetails(offenderMovements.first, "Last movement was not REL", false)
         }
         return OffenderSupportingPrisonDetails(offenderMovements.first, lastMovement.fromAgency, true)
+    }
+
+    fun resolveNames(namesToMatch: Collection<String>, namesAvailable: List<AgencyDetails>): List<utils.ResolutionResult> {
+        return resolve(namesToMatch,
+            {
+                val uniqueNames = it.replace("HMP", "").replace("YOI", "").replace("HMYOI", "").replace("zzz", "").replace("(", "").replace(")", "").replace("/", "").replace("&", "")
+                val nameToSearch = uniqueNames.trim().uppercase()
+                nameToSearch
+            },
+            {
+                namesAvailable.filter { v -> v.description.uppercase().contains(it) }.map { it.agencyId }
+            })
+    }
+
+    fun resolve(namesToMatch: Collection<String>, transformer: (String) -> String, resolver: (s: String) -> List<String>): List<utils.ResolutionResult> {
+        val resolutionResults = mutableListOf<utils.ResolutionResult>()
+
+        // Do basic matching for the moment
+        namesToMatch.forEach {
+            val nameToSearch = transformer(it)
+            // Remove the common names
+            // val uniqueNames = it.replace("HMP", "").replace("YOI", "").replace("HMYOI", "").replace("zzz", "").replace("(", "").replace(")", "").replace("/", "").replace("&", "")
+            // val nameToSearch = uniqueNames.trim().uppercase()
+            val foundValues = resolver(nameToSearch)
+            if (foundValues.size < 1) {
+                resolutionResults.add(
+                    ResolutionResult(
+                        initialName = it,
+                        resolvedNomisCode = null,
+                        resolutionNotes = "Nothing found",
+                    )
+                )
+            }
+            else if (foundValues.size > 1) {
+                resolutionResults.add(
+                    ResolutionResult(
+                        initialName = it,
+                        resolvedNomisCode = null,
+                        resolutionNotes = "Multiple found",
+                    )
+                )
+            }
+            else {
+                resolutionResults.add(
+                    ResolutionResult(
+                        initialName = it,
+                        resolvedNomisCode = foundValues[0],
+                        resolutionNotes = null,
+                    )
+                )
+            }
+        }
+
+        return resolutionResults
+    }
+
+    fun extractFailedResolutions(processedRowResults: List<utils.ResolutionResult>): List<utils.ResolutionResult> {
+         return processedRowResults.filter { it.resolvedNomisCode == null }
+    }
+
+    fun extractSuccessfulResolutions(processedRowResults: List<utils.ResolutionResult>): List<utils.ResolutionResult> {
+        return processedRowResults.filter { it.resolvedNomisCode != null }
+    }
+
+    fun resolveNames(namesToMatch: Collection<String>, namesAvailable: Map<String, String>): List<String> {
+        val matchedOrEmptyNames = namesToMatch.map { Pair(it, namesAvailable.getOrDefault(it, "")) }
+        val emptyOnes = matchedOrEmptyNames.filter { it.second.isEmpty() }
+        return emptyOnes.map { it.first }
     }
 }

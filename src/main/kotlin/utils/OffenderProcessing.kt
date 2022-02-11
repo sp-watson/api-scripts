@@ -18,7 +18,7 @@ class OffenderProcessing {
     fun cleanseOffenderInformation(
         spreadsheetRowInformation: List<RowInformation>,
     ): List<OffenderInformation> {
-        return spreadsheetRowInformation.map { OffenderInformation(it.offenderNo ?: "A1234AA", "MDI", it.hospitalName ?: "Unknown") }
+        return spreadsheetRowInformation.map { OffenderInformation(it.offenderNo ?: "OFFNONOTSET", it.prisonName ?: "PRISONNAMENOTSET", it.hospitalNomsId ?: "Unknown") }
     }
 
     fun generateResolutionResult(offenderDetails: OffenderDetails, foundOffenderDetails: List<OffenderSearchResult>): ResolvedOffenderDetails {
@@ -50,4 +50,12 @@ class OffenderProcessing {
             ResolutionResult.PROCESSING_ERROR -> "ERROR [${resolvedInformation.processingError}]"
         }
     }
+
+    @Throws(exceptionClasses = [PrisonNotResolvedException::class])
+    fun resolvePrisonName(prisonIdsByName: Map<String, String>, prisonName: String): String {
+        val foundPrisonId = prisonIdsByName[prisonName]
+        return foundPrisonId ?: throw PrisonNotResolvedException()
+    }
 }
+
+class PrisonNotResolvedException : RuntimeException("Prison name not resolved")

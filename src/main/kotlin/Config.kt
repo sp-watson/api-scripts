@@ -5,4 +5,6 @@ interface Config {
     val token: String
     val spreadsheetFileName: String
     val resultsBaseDirectory: String
+    val prisonLookupFileName: String
+    val hospitalLookupFileName: String
 }

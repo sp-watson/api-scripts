@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter
 data class MigrateOffenderRequestEvent(
     val responsiblePrisonId: String,
     val offenderNo: String,
-    val targetHospitalCode: String,
+    val targetHospitalNomsId: String,
     val progressStreamRef: StreamReference,
 )
 
@@ -48,7 +48,7 @@ class MigrateOffender (
         }
 
         val movementTime = LocalDateTime.now()
-        restrictedPatientApi.moveToHospital(command.responsiblePrisonId, command.offenderNo, command.targetHospitalCode, movementTime, dischargeToHospitalCommentText)
+        restrictedPatientApi.moveToHospital(command.responsiblePrisonId, command.offenderNo, command.targetHospitalNomsId, movementTime, dischargeToHospitalCommentText)
 
         val offenderAdded = checkPrisonerAdded(command.offenderNo)
         if (!offenderAdded) {

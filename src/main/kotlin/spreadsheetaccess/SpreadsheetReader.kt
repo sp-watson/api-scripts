@@ -24,7 +24,7 @@ class SpreadsheetReader(
         private val DATE_OF_BIRTH_COL = "D"
         private val FIRST_NAMES_COL = "C"
         private val FAMILY_NAME_COL = "B"
-        private val OFFENDER_NO_START_ROW = 2
+        private val OFFENDER_NO_START_ROW = 1
     }
 
     fun readAllRows(): List<RowInformation> {

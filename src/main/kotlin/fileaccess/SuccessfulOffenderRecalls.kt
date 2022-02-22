@@ -3,12 +3,12 @@ package fileaccess
 import java.io.File
 import java.nio.file.Path
 
-class SuccessfulOffenderMigrations(val baseDirectory: String, val name: String) {
-    fun getMigratedOffenders(): List<String> {
+class SuccessfulOffenderRecalls(val baseDirectory: String, val name: String) {
+    fun getRecalledOffenders(): List<String> {
         return getFile().readLines()
     }
 
-    @Synchronized fun offenderMigrated(offenderNo: String) {
+    @Synchronized fun offenderRecalled(offenderNo: String) {
         getFile().appendText("$offenderNo\n")
     }
 

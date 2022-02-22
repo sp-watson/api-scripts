@@ -10,12 +10,14 @@ import java.time.format.DateTimeFormatter
 typealias StreamReference = FileWriter
 
 class PerOffenderFileOutput(val baseDirectory: String, val archiveSubDirectory: String) {
-    fun migrationStarted(offenderNo: String): StreamReference {
+    fun migrationStarted(offenderNo: String): StreamReference? {
         val fileToWriteTo = getFile(offenderNo)
         if (fileToWriteTo.exists()) {
-            val isMoved: Boolean = fileToWriteTo.renameTo(getArchiveFile(offenderNo))
+            val archiveFile = getArchiveFile(offenderNo)
+            val isMoved: Boolean = fileToWriteTo.renameTo(archiveFile)
             if (!isMoved) {
-                throw RuntimeException("Unable to rename file $")
+                System.err.println("Unable to rename file for ${archiveFile.absolutePath}")
+                return null
             }
         }
 

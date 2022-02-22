@@ -9,6 +9,7 @@ import gateways.WebClientException
 import fileaccess.PerOffenderFileOutput
 import fileaccess.StreamReference
 import fileaccess.SuccessfulOffenderMigrations
+import fileaccess.SuccessfulOffenderRecalls
 import utils.Loops
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -17,17 +18,19 @@ data class MigrateOffenderRequestEvent(
     val responsiblePrisonId: String,
     val offenderNo: String,
     val targetHospitalNomsId: String,
+    val successfullyRecalledOffenders: List<String>,
     val progressStreamRef: StreamReference,
 )
 
 class MigrateOffender (
     private val successfulMigrations: SuccessfulOffenderMigrations,
+    private val successfulRecalls: SuccessfulOffenderRecalls,
     private val progressStream: PerOffenderFileOutput,
     private val prisonApi: PrisonApi,
     private val restrictedPatientApi: RestrictedPatientsApi,
     private val removingExistingRestrictedPatient: Boolean,
     private val recallMovementReasonCode: String,
-    private val recallImprisonmentStatus: String,
+    private val recallImprisonmentStatus: String?,
     private val recallIsYouthOffender: Boolean,
     private val dischargeToHospitalCommentText: String
 ) {
@@ -35,10 +38,17 @@ class MigrateOffender (
     fun handle(command: MigrateOffenderRequestEvent) {
         println("Attempting to migrate ${command.offenderNo} ")
 
-        val recallTime = LocalDateTime.now()
-        prisonApi.recall(command.responsiblePrisonId, command.offenderNo, recallTime,
-            recallMovementReasonCode, recallImprisonmentStatus, recallIsYouthOffender)
-        progressStream.recallSuccessful(command.progressStreamRef)
+        // TODO - Consider check-and-set pattern, using single abstraction for recall info (but the recall object cannot add info)
+        val hasSuccessfulRecall = checkRecallStatus(command.successfullyRecalledOffenders, command.offenderNo)
+        if (!hasSuccessfulRecall) {
+            val recallTime = LocalDateTime.now()
+            prisonApi.recall(
+                command.responsiblePrisonId, command.offenderNo, recallTime,
+                recallMovementReasonCode, recallImprisonmentStatus, recallIsYouthOffender
+            )
+            successfulRecalls.offenderRecalled(command.offenderNo)
+            progressStream.recallSuccessful(command.progressStreamRef)
+        }
 
         if (removingExistingRestrictedPatient) {
             val offenderRemoved = checkPrisonerRemoved(command.offenderNo)
@@ -56,6 +66,10 @@ class MigrateOffender (
         }
 
         successfulMigrations.offenderMigrated(command.offenderNo)
+    }
+
+    private fun checkRecallStatus(successfulRecalls: List<String>, offenderNo: String): Boolean {
+        return successfulRecalls.contains(offenderNo)
     }
 
     private fun checkPrisonerRemoved(offenderNo: String): Boolean {

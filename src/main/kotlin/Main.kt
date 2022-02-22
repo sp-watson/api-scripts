@@ -3,6 +3,7 @@ import gateways.RestrictedPatientsApi
 import fileaccess.PerOffenderFileOutput
 import fileaccess.PrisonLookup
 import fileaccess.SuccessfulOffenderMigrations
+import fileaccess.SuccessfulOffenderRecalls
 import fileaccess.SynchronisedSummaryOutput
 import rpmigration.MigrateOffender
 import rpmigration.MigrationRequestEvent
@@ -11,19 +12,21 @@ import spreadsheetaccess.SpreadsheetReader
 
 fun main() {
     // ====== MUST DO ON VPN ========
-    val config: Config = PreProd()
+    val config: Config = Prod()
 
-    val firstOffenderNumber = 9
-    val numberOfOffenders = 5
+    val firstOffenderNumber = 720
+    val numberOfOffenders = 20
 
     val archiveSubDirectory = "archive"
-    val existingSuccessfulMigrationFileName = "SUCCESSFUL_MIGRATIONS.txt"
+    val existingSuccessfulMigrationsFileName = "SUCCESSFUL_MIGRATIONS.txt"
+    val existingSuccessfulRecallsFileName = "SUCCESSFUL_RECALLS.txt"
     val recallMovementReasonCode = "Z"
-    val recallImprisonmentStatus = "RECEP_HOS"
+    val recallImprisonmentStatus = null
     val recallIsYouthOffender = false
     val dischargeToHospitalCommentText = "Released to hospital (Restricted Patients migration)"
 
-    val successfulOffenderMigrations = SuccessfulOffenderMigrations(config.resultsBaseDirectory, existingSuccessfulMigrationFileName)
+    val successfulOffenderMigrations = SuccessfulOffenderMigrations(config.resultsBaseDirectory, existingSuccessfulMigrationsFileName)
+    val successfulOffenderRecalls = SuccessfulOffenderRecalls(config.resultsBaseDirectory, existingSuccessfulRecallsFileName)
     val progressStream = PerOffenderFileOutput(config.resultsBaseDirectory, archiveSubDirectory)
     val prisonApi = PrisonApi(config.prisonApiRootUrl, config.token)
     val prisonLookup = PrisonLookup(config.prisonLookupFileName)
@@ -33,9 +36,10 @@ fun main() {
         SpreadsheetReader(config.spreadsheetFileName),
         prisonLookup,
         successfulOffenderMigrations,
+        successfulOffenderRecalls,
         SynchronisedSummaryOutput(config.resultsBaseDirectory),
         PerOffenderFileOutput(config.resultsBaseDirectory, archiveSubDirectory),
-        MigrateOffender(successfulOffenderMigrations, progressStream, prisonApi, rpApi, config.removingExistingRestrictedPatient,
+        MigrateOffender(successfulOffenderMigrations, successfulOffenderRecalls, progressStream, prisonApi, rpApi, config.removingExistingRestrictedPatient,
             recallMovementReasonCode, recallImprisonmentStatus, recallIsYouthOffender, dischargeToHospitalCommentText)
     )
 

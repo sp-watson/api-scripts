@@ -20,6 +20,8 @@ There are 3 outputs and 1 input file:
   If a file already exists for a givne offender, then that is moved to the archive sub-directory.
 * A file that contains a list of offenders that have been successfully migrated. This must exist, so before the first run must be created and be empty.
   This file should never be deleted, as it is the only way the system knows whether to try to migrate an offender.
+* A file that contains a list of offenders that have been successfully recalled.
+  As per the above "successfully migrated" file, his has to exist.
 
 ## Instructions
 In order to run the feature you will need to:
@@ -28,6 +30,7 @@ In order to run the feature you will need to:
 * In that base directory:
   - Make a blank sub-directory called "archive"
   - Make a blank file called SUCCESSFUL_MIGRATIONS.txt
+  - Make a blank file called SUCCESSFUL_RECALLS.txt
 * Add config `spreadsheetFileName` that indicates where the xlsx file is
 * In the Main class, set the first offender number (e.g. 1 - start of the file) and the number of offenders
 * Run it using the Main class as the entry point

@@ -43,17 +43,18 @@ class PrisonApi (
                                             offenderNo: String,
                                             movementTimeString: LocalDateTime,
                                             movementReasonCode: String,
-                                            imprisonmentStatus: String,
+                                            imprisonmentStatus: String?,
                                             isYouthOffender: Boolean) {
         println("Attempting to recall $offenderNo ")
 
         val youthOffenderString = if (isYouthOffender) "true" else "false"
+        val imprisonmentStatusString = if (imprisonmentStatus != null) "\"imprisonmentStatus\": \"$imprisonmentStatus\"," else ""
         val data = """
         {
           "prisonId": "$toPrisonId",
           "movementReasonCode": "$movementReasonCode",
           "recallTime": "$movementTimeString",
-          "imprisonmentStatus": "$imprisonmentStatus",
+          $imprisonmentStatusString
           "youthOffender": $youthOffenderString
         }
     """

@@ -31,6 +31,8 @@ In order to run the feature you will need to:
   - Make a blank sub-directory called "archive"
   - Make a blank file called SUCCESSFUL_MIGRATIONS.txt
   - Make a blank file called SUCCESSFUL_RECALLS.txt
+  - Make a file called ALREADY_IN_PRISON.txt
+    - Add a NOMS id on each line for each prisoner we know is no longer relevant for migration
 * Add config `spreadsheetFileName` that indicates where the xlsx file is
 * In the Main class, set the first offender number (e.g. 1 - start of the file) and the number of offenders
 * Run it using the Main class as the entry point

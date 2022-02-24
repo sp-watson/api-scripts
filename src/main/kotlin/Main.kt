@@ -12,20 +12,21 @@ import spreadsheetaccess.SpreadsheetReader
 
 fun main() {
     // ====== MUST DO ON VPN ========
-    val config: Config = Prod()
+    val config: Config = PreProd()
 
-    val firstOffenderNumber = 720
-    val numberOfOffenders = 20
+    val firstOffenderNumber = 90
+    val numberOfOffenders = 17
 
     val archiveSubDirectory = "archive"
     val existingSuccessfulMigrationsFileName = "SUCCESSFUL_MIGRATIONS.txt"
+    val existingAlreadyInPrisonFileName = "ALREADY_IN_PRISON.txt"
     val existingSuccessfulRecallsFileName = "SUCCESSFUL_RECALLS.txt"
     val recallMovementReasonCode = "Z"
     val recallImprisonmentStatus = null
     val recallIsYouthOffender = false
     val dischargeToHospitalCommentText = "Released to hospital (Restricted Patients migration)"
 
-    val successfulOffenderMigrations = SuccessfulOffenderMigrations(config.resultsBaseDirectory, existingSuccessfulMigrationsFileName)
+    val successfulOffenderMigrations = SuccessfulOffenderMigrations(config.resultsBaseDirectory, existingSuccessfulMigrationsFileName, existingAlreadyInPrisonFileName)
     val successfulOffenderRecalls = SuccessfulOffenderRecalls(config.resultsBaseDirectory, existingSuccessfulRecallsFileName)
     val progressStream = PerOffenderFileOutput(config.resultsBaseDirectory, archiveSubDirectory)
     val prisonApi = PrisonApi(config.prisonApiRootUrl, config.token)

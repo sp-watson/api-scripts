@@ -2,33 +2,23 @@ package gateways
 
 import java.net.HttpURLConnection
 import java.net.URL
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class RestrictedPatientsApi (
     val restrictedPatientsApiUrl: String,
     val token: String,
 ) {
     @Throws(exceptionClasses = [WebClientException::class, ServerException::class])
-    fun moveToHospital(fromPrisonId: String,
-                       offenderNo: String,
-                       hospitalNomsId: String,
-                       dischargeTime: LocalDateTime,
-                       commentText: String) {
-        println("Attempting to move $offenderNo to hospital")
+    fun migrateInOffender(offenderNo: String,
+                       hospitalNomsId: String) {
+        println("Attempting to migrate in $offenderNo")
 
-        val dischargeTimeString = dischargeTime.format(DateTimeFormatter.ISO_DATE_TIME)
         val data = """
         {
             "offenderNo": "$offenderNo",
-            "hospitalLocationCode": "$hospitalNomsId",
-            "dischargeTime": "$dischargeTimeString",
-            "commentText": "$commentText",
-            "supportingPrisonId": "$fromPrisonId",
-            "fromLocationId": "$fromPrisonId"
+            "hospitalLocationCode": "$hospitalNomsId"
         }
     """
-        val conn = URL("$restrictedPatientsApiUrl/discharge-to-hospital").openConnection() as HttpURLConnection
+        val conn = URL("$restrictedPatientsApiUrl/migrate-in-restricted-patient").openConnection() as HttpURLConnection
         conn.requestMethod = "POST"
         conn.doOutput = true
         conn.setRequestProperty("Content-Type", "application/json")
@@ -43,12 +33,15 @@ class RestrictedPatientsApi (
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            val errorInfo = conn.errorStream.use {
-                it.bufferedReader().readLines()
-            }
-            val errorString = errorInfo.joinToString { it }
-            errorInfo.forEach{
-                println("Error Line: $it")
+            var errorString = "No error information - see logs"
+            if (conn.errorStream != null) {
+                val errorInfo = conn.errorStream.use {
+                    it.bufferedReader().readLines()
+                }
+                errorString = errorInfo.joinToString { it }
+                errorInfo.forEach {
+                    println("Error Line: $it")
+                }
             }
             println("Error response: ${conn.responseCode}: ${conn.responseMessage}")
             if (conn.responseCode >= 500) {

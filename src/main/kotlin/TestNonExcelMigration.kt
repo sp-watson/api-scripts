@@ -13,8 +13,8 @@ fun main() {
     val existingSuccessfulMigrationsFileName = "SUCCESSFUL_MIGRATIONS.txt"
     val existingAlreadyInPrisonFileName = "ALREADY_IN_PRISON.txt"
 
-    val offenderNo = "A0666ER" // Ultimate test = A0666ER
-    val hospitalNomsId = "ASHWTH"
+    val offenderNo = "??"
+    val hospitalNomsId = "??"
 
     val successfulOffenderMigrations = SuccessfulOffenderMigrations(config.resultsBaseDirectory, existingSuccessfulMigrationsFileName, existingAlreadyInPrisonFileName)
     val rpApi = RestrictedPatientsApi(config.restrictedPatientsApiRootUrl, config.token)
